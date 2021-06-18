@@ -8,6 +8,8 @@ import 'package:introduction_screen/src/model/page_view_model.dart';
 import 'package:introduction_screen/src/ui/intro_button.dart';
 import 'package:introduction_screen/src/ui/intro_page.dart';
 
+typedef DotsCallback = Widget Function(BuildContext context, PageController controller, int pageCount);
+
 class IntroductionScreen extends StatefulWidget {
   /// All pages of the onboarding
   final List<PageViewModel>? pages;
@@ -159,6 +161,8 @@ class IntroductionScreen extends StatefulWidget {
   /// @Default `false`
   final bool rtl;
 
+  final DotsCallback? dots;
+
   const IntroductionScreen({
     Key? key,
     this.pages,
@@ -198,6 +202,7 @@ class IntroductionScreen extends StatefulWidget {
     this.pagesAxis = Axis.horizontal,
     this.scrollPhysics = const BouncingScrollPhysics(),
     this.rtl = false,
+    this.dots
   })  : assert(pages != null || rawPages != null),
         assert(
           (pages != null && pages.length > 0) ||
@@ -360,16 +365,8 @@ class IntroductionScreenState extends State<IntroductionScreen> {
                       Expanded(
                         flex: widget.dotsFlex,
                         child: Center(
-                          child: widget.isProgress
-                              ? DotsIndicator(
-                                  reversed: widget.rtl,
-                                  dotsCount: getPagesLength(),
-                                  position: _currentPage,
-                                  decorator: widget.dotsDecorator,
-                                  onTap: widget.isProgressTap && !widget.freeze
-                                      ? (pos) => animateScroll(pos.toInt())
-                                      : null,
-                                )
+                          child: widget.isProgress && widget.dots != null
+                              ? widget.dots!.call(context, _pageController, (widget.pages != null)? widget.pages!.length : 0)
                               : const SizedBox(),
                         ),
                       ),
